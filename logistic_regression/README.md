@@ -10,7 +10,7 @@
 
 Here we will talk about the $1^{st}$ question. 
 
-### `What kind of problem are you trying to solve?`
+### `What kind of a problem are you trying to solve?`
 
 The following are the types of problems that you will encounter most often if you are starting out in the realm of ML:
 
