@@ -242,3 +242,83 @@ if __name__ == "__main__":
     #* and store the output in the variable lin_rmse
     #* Note that by setting the "squared" parameter to False, we compute the RMSE, otherise we will have the MSE
     lin_rmse = mean_squared_error(housing_labels, predictions, squared = False)
+
+    """
+    Now we will train another model(DecisionTreeRegressor) to make predictions on our data. Decision trees are one of the rule based methods.
+    Import DecisionTreeRegressor Class from the module tree of sklearn
+    """
+    from sklearn.tree import DecisionTreeRegressor
+    #* Create an instance of the class
+    tree_reg = DecisionTreeRegressor()
+    #* Fit the model on the training data
+    tree_reg.fit(housing_prepared, housing_labels)
+    #* Make predictions using the .predict() method and save it in the variable predictions
+    predictions = tree_reg.predict(housing_prepared)
+    #* Compute the RMSE using mean_squared_error() and setting the squared parameter to False, function and store it in tree_rmse
+    tree_rmse = mean_squared_error(housing_labels, predictions, squared = False)
+    """
+    Now we will take a look at how to validate the predictions made by the model.
+    We will import cross_val_score function of the model_selection module of the sklearn
+    """
+    from sklearn.model_selection import cross_val_score
+    #* The cross_val_score function is called to perform cross-validation on the tree_reg model. It takes in the following arguments:
+    #* tree_reg: The model to be cross validated
+    #* housing_prepared: The dataset obtained from full-pipeline
+    #* housing_labels: The target variable
+    #* scoring="neg_root_mean_squared_error": The scoring parameter specifies the evaluation metric used for cross-validation. In this case, the negative root mean squared error (neg_root_mean_squared_error) is used
+    #* cv=10: The cv parameter specifies the number of cross-validation folds. In this case, cross-validation is performed with 10 folds, meaning the dataset is divided into 10 parts, and the model is trained and evaluated 10 times, each time using a different fold as the validation set and the rest as the training set
+    scores = cross_val_score(tree_reg, housing_prepared, housing_labels, scoring = "neg_root_mean_squared_error", cv = 10)
+    #* Store the absolute value of the scores in a variable
+    scores = abs(scores)
+    """
+    We will now import the RandomForestRegressor Class from the ensemble module of sklearn
+    This class is used for regression tasks and is an ensemble learning method that constructs multiple decision trees and averages their predictions.
+    """
+    from sklearn.ensemble import RandomForestRegressor
+    #* Create an instance of the class
+    forest_reg = RandomForestRegressor()
+    #* Fi the model on the data
+    forest_reg.fit(housing_prepared, housing_labels)
+    #* Make predictions and store it in a variable
+    predictions = forest_reg.predict(housing_prepared)
+    #* Use the .mean_squared_error() function to compute RMSE
+    forest_rmse = mean_squared_error(housing_labels, predictions, squared = False)
+    #* Validate the score using the .cross_val_score() method
+    scores = cross_val_score(forest_reg,housing_prepared, housing_labels,scoring = "neg_root_mean_squared_error", cv = 10)
+    #* Storing the absolute value of the scores in a variable
+    scores = abs(scores)
+    print(scores)
+    """
+    From the model_selection module of sklearn, import GridSearchCV
+    GridSearchCV to perform a grid search over hyperparameters for a random forest regression model (reg_forest). The grid 
+    search helps to find the best combination of hyperparameters for the model that results in the lowest root mean squared error (RMSE) during cross-validation
+    """
+    from  sklearn.model_selection import GridSearchCV
+    #* Create an instance of the class 
+    reg_forest = RandomForestRegressor()
+    #* The param_grid variable defines the grid of hyperparameters to search over. In this case, the grid includes the number of estimators (n_estimators) and the 
+    #* maximum number of features to consider for splitting (max_features)
+    param_grid = {'n_estimators': [3, 10, 30], 'max_features': [2, 4, 6, 8]}
+    #* The number of cross-validation folds (cv=5) is set to 5, meaning the dataset will be split into 5 parts for cross-validation
+    grid_search = GridSearchCV(estimator=reg_forest, param_grid=param_grid, scoring="neg_root_mean_squared_error", cv=5)
+    #* Fit it on our housing training data along with its labels 
+    grid_search.fit(housing_prepared, housing_labels)
+    #* Get the best parameters using the best_params_ attribute of the grid_search object 
+    best_param = grid_search.best_params_
+    #------------------------------------------------------------------------------------------------------------------
+    """
+    Now we will see the evaluation of the final model on the test set after performing the necessary preprocessing steps and obtaining the best estimator from the grid search
+    """
+    #* The labels of the test data
+    y_test = strat_test_set['median_house_value'].copy()
+    #* The test data based on which we will make predictions (After droping off the target values)
+    X_test = strat_test_set.drop("median_house_value", axis = 1)
+    #* We use the full pipeline that was created earlier and call the transform method on it, and pass the argument as the test data
+    X_test_prepared = full_pipeline.transform(X_test)
+    #* "final_model" is the object that holds the final best model we got after the grid search 
+    final_model = grid_search.best_estimator_
+    #* Using this best model, we will make the predictions, b y using the .predict() method on the transformed test data
+    final_predictions = final_model.predict(X_test_prepared)
+    #* Compute the RMSE to evaluate how our model performed on the test data 
+    final_rmse = mean_squared_error(y_test, final_predictions, squared = False)
+    print(final_rmse)
