@@ -11,3 +11,4 @@
 9. To create the full pipeline for both numerical and categorical data, we make use of ColumnTransformer class
 10. After the data processing part, we create several models like Linear regression model, Decision tree model, Random Forest model, etc.
 11. We also demonstrate how to implement the cross_val_score to validate our predictions.
+12. We use the grid search method to choose the best model with the lowest RMSE possible while using the random forest regressor as our final model
